@@ -73,7 +73,8 @@ del messages
 
 # print('shape of dataframe: ', email_df.shape)
 for col in email_df.columns:
-    print(col, email_df[col].nunique())
+    pass
+    # print(col, email_df[col].nunique())
 
 # Set index and drop columns with two few values
 email_df = email_df.set_index('Message-ID').drop(['file', 'Mime-Version', 'Content-Type',
@@ -125,5 +126,28 @@ sns.pairplot(group_by_people.reset_index(), hue='user')
 # plt.show()
 
 
+# who sent the most emails to whom
 
+# checking emails sent to single email addresses first, more important stuffs
+sub_df = email_df[['From', 'To', 'Date']].dropna()
+# print(sub_df.shape)
+
+# drop emails sent to multiple email addresses
+sub_df = sub_df.loc[sub_df['To'].map(len) == 1]
+# print(sub_df.shape)
+
+
+# actually view who sent what to who
+sub_df = sub_df.groupby(['From', 'To']).count().reset_index()
+# Unpack frozensets
+sub_df['From'] = sub_df['From'].map(lambda x: next(iter(x)))
+sub_df['To'] = sub_df['To'].map(lambda x: next(iter(x)))
+
+# rename column and print  the first 10 of such email sendings
+sub_df.rename(columns={'Date': 'count'}, inplace=True)
+print(sub_df.sort_values(by='count', ascending=False).head(10))
+
+# make a network of email senders and recipients
+G = nx.from_pandas_dataframe(sub_df, 'From', 'To', edge_attr='count', create_using=nx.DiGraph())
+print('Number of nodes: %d, Number of edges: %d' % (G.number_of_nodes(), G.number_of_edges()))
 
