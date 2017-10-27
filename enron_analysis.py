@@ -12,8 +12,10 @@ import wordcloud
 # Network Analysis
 import networkx as nx
 
+
 # NLP
 from nltk.tokenize.regexp import RegexpTokenizer
+from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 
 from subprocess import check_output
 
@@ -151,3 +153,37 @@ print(sub_df.sort_values(by='count', ascending=False).head(10))
 G = nx.from_pandas_dataframe(sub_df, 'From', 'To', edge_attr='count', create_using=nx.DiGraph())
 print('Number of nodes: %d, Number of edges: %d' % (G.number_of_nodes(), G.number_of_edges()))
 
+# # visualize data
+#
+# fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12, 8))
+# ax1.hist(list(G.in_degree(weight='count').values()), log=True, bins=20)
+# ax1.set_xlabel('In-degrees', fontsize=18)
+#
+# ax2.hist(list(G.out_degree(weight='count').values()), log=True, bins=20)
+# ax2.set_xlabel('Out-degrees', fontsize=18)
+#
+# plt.show()
+
+# What the emails say in subject
+subjects = ' '.join(email_df['Subject'])
+fig, ax = plt.subplots(figsize=(16, 12))
+wc = wordcloud.WordCloud(width=800,
+                         height=600,
+                         max_words=200,
+                         stopwords=ENGLISH_STOP_WORDS).generate(subjects)
+ax.imshow(wc)
+ax.axis("off")
+
+# plt.show()
+
+# What the emails say in content
+contents = ' '.join(email_df.sample(1000)['content'])
+fig, ax = plt.subplots(figsize=(16, 12))
+wc = wordcloud.WordCloud(width=800,
+                         height=600,
+                         max_words=200,
+                         stopwords=ENGLISH_STOP_WORDS).generate(contents)
+ax.imshow(wc)
+ax.axis("off")
+
+plt.show()
